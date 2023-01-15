@@ -6,9 +6,6 @@
 // project
 #include "ltb/utils/expected.hpp"
 
-// external
-#include <tl/expected.hpp>
-
 // standard
 #include <memory>
 
@@ -34,6 +31,12 @@ private:
 
     /// \brief RAII object to handle an ImGui context.
     std::shared_ptr< ImGuiContext > imgui_ = nullptr;
+
+    /// \brief RAII object to handle ImGui GLFW setup and destruction.
+    std::shared_ptr< bool > imgui_glfw_ = nullptr;
+
+    /// \brief RAII object to handle ImGui OpenGL setup and destruction.
+    std::shared_ptr< bool > imgui_opengl_ = nullptr;
 
     auto init_glfw( ) -> utils::Expected< MainWindow* >;
     auto init_window( ) -> utils::Expected< MainWindow* >;

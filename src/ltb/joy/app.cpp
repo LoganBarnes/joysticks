@@ -3,6 +3,9 @@
 // ///////////////////////////////////////////////////////////////////////////////////////
 #include "ltb/joy/app.hpp"
 
+// project
+#include "ltb/joy/joysticks.hpp"
+
 // external
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
@@ -112,6 +115,35 @@ auto MainWindow::init_opengl( ) -> utils::Expected< MainWindow* >
 
 auto MainWindow::init_imgui( ) -> utils::Expected< MainWindow* >
 {
+    // Setup the Dear ImGui binding
+    IMGUI_CHECKVERSION( );
+
+    imgui_ = std::shared_ptr< ImGuiContext >( ImGui::CreateContext( ), ImGui::DestroyContext );
+    spdlog::debug( "Created ImGui context" );
+
+    imgui_glfw_ = std::shared_ptr< bool >( new bool( ImGui_ImplGlfw_InitForOpenGL( window( ), true ) ), []( auto* p ) {
+        spdlog::debug( "ImGui_ImplGlfw_Shutdown" );
+        ImGui_ImplGlfw_Shutdown( );
+        delete p;
+    } );
+
+    if ( !*imgui_glfw_ )
+    {
+        return LTB_MAKE_UNEXPECTED_ERROR( "ImGui_ImplGlfw_InitForOpenGL failed." );
+    }
+    spdlog::debug( "ImGui_ImplGlfw_InitForOpenGL succeeded." );
+
+    imgui_opengl_ = std::shared_ptr< bool >( new bool( ImGui_ImplOpenGL3_Init( ) ), []( auto* p ) {
+        spdlog::debug( "ImGui_ImplOpenGL3_Shutdown" );
+        ImGui_ImplOpenGL3_Shutdown( );
+        delete p;
+    } );
+
+    if ( !*imgui_opengl_ )
+    {
+        return LTB_MAKE_UNEXPECTED_ERROR( "ImGui_ImplOpenGL3_Init failed." );
+    }
+    spdlog::debug( "ImGui_ImplOpenGL3_Init succeeded." );
 
     return this;
 }
@@ -126,18 +158,26 @@ auto MainWindow::main_loop( ) -> utils::Expected< MainWindow* >
         glViewport( 0, 0, framebuffer_width, framebuffer_height );
 
         // Update GUI state
-        // ImGui_ImplOpenGL3_NewFrame( );
-        // ImGui_ImplGlfw_NewFrame( );
-        // ImGui::NewFrame( );
+        ImGui_ImplOpenGL3_NewFrame( );
+        ImGui_ImplGlfw_NewFrame( );
+        ImGui::NewFrame( );
 
         // Gather all available joystick info
+        auto joysticks = poll_joystick_info( );
 
         // Configure joysticks GUI
+        ImGui::SetNextWindowPos( { 0.f, 0.f } );
+        ImGui::SetNextWindowSize( ImGui::GetIO( ).DisplaySize );
+        if ( ImGui::Begin( "Joysticks", nullptr, ImGuiWindowFlags_NoTitleBar ) )
+        {
+            configure_gui( joysticks );
+        }
+        ImGui::End( );
 
         // Render GUI
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-        // ImGui::Render( );
-        // ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData( ) );
+        ImGui::Render( );
+        ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData( ) );
 
         glfwSwapBuffers( window( ) );
         glfwPollEvents( );
