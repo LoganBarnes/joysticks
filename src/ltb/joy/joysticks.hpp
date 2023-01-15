@@ -22,6 +22,6 @@ struct Joystick
 
 auto poll_joystick_info( ) -> std::vector< Joystick >;
 
-auto configure_gui( std::vector< Joystick > const& joysticks ) -> void;
+auto configure_gui_window( std::vector< Joystick > const& joysticks ) -> void;
 
 } // namespace ltb::joy

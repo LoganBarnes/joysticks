@@ -10,10 +10,10 @@ From the repo root directory:
 # make build directory and enter it.
 mkdir build
 cd build
-# Configure the project
+# Configure the project and download packages
 cmake -DCMAKE_BUILD_TYPE=Release ..
 # Build the project
 cmake --build . --config Release --target joysticks --parallel
-# Run the app (./Release/joystick.exe on Windows)
+# Run the app (.\Release\joystick.exe on Windows)
 ./joystick
 ```

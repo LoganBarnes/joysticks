@@ -8,10 +8,58 @@
 #include <imgui.h>
 
 // standard
-#include <numeric>
+#include <algorithm>
 
 namespace ltb::joy
 {
+namespace
+{
+
+auto configure_buttons_gui( Joystick const& joystick )
+{
+    auto const max_column_count    = 8ULL;
+    auto const button_column_count = std::min( max_column_count, joystick.buttons.size( ) );
+
+    if ( ImGui::BeginTable( "Buttons", button_column_count, ImGuiTableFlags_Borders ) )
+    {
+        ImGui::TableNextRow( );
+
+        for ( auto i = 0ULL; i < joystick.buttons.size( ); ++i )
+        {
+            ImGui::PushID( static_cast< int >( i ) );
+
+            ImGui::TableNextColumn( );
+
+            auto const label = fmt::format( "({})##button", i );
+            ImGui::RadioButton( label.c_str( ), joystick.buttons[ i ] == GLFW_PRESS );
+
+            if ( i % max_column_count == max_column_count - 1ULL )
+            {
+                ImGui::TableNextRow( );
+            }
+
+            ImGui::PopID( );
+        }
+
+        ImGui::EndTable( );
+    }
+}
+
+auto configure_axis_gui( Joystick const& joystick )
+{
+    for ( auto i = 0UL; i < joystick.axes.size( ); ++i )
+    {
+        ImGui::PushID( static_cast< int >( i ) );
+
+        auto const label = fmt::format( "({})##axis", i );
+        auto       axis  = joystick.axes[ i ];
+        ImGui::SliderFloat( label.c_str( ), &axis, -1.f, 1.f, "%.3f" );
+
+        ImGui::PopID( );
+    }
+}
+
+} // namespace
 
 auto poll_joystick_info( ) -> std::vector< Joystick >
 {
@@ -40,61 +88,33 @@ auto poll_joystick_info( ) -> std::vector< Joystick >
     return joysticks;
 }
 
-auto configure_gui( std::vector< Joystick > const& joysticks ) -> void
+auto configure_gui_window( std::vector< Joystick > const& joysticks ) -> void
 {
-    if ( joysticks.empty( ) )
+    ImGui::SetNextWindowPos( { 0.f, 0.f } );
+    ImGui::SetNextWindowSize( ImGui::GetIO( ).DisplaySize );
+    if ( ImGui::Begin( "Joysticks", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize ) )
     {
-        ImGui::TextColored( { 1.f, 1.f, 0.f, 1.f }, "No joysticks detected" );
-        return;
-    }
-
-    for ( auto& joystick : joysticks )
-    {
-        ImGui::PushID( joystick.glfw_index );
-
-        if ( ImGui::CollapsingHeader( joystick.name.c_str( ) ) )
+        if ( joysticks.empty( ) )
         {
-            auto const button_column_count = std::min( 8UL, joystick.buttons.size( ) );
-
-            if ( ImGui::BeginTable( "Buttons", button_column_count, ImGuiTableFlags_Borders ) )
+            ImGui::TextColored( { 1.f, 1.f, 0.f, 1.f }, "No joysticks detected" );
+        }
+        else
+        {
+            for ( auto& joystick : joysticks )
             {
+                ImGui::PushID( joystick.glfw_index );
 
-                ImGui::TableNextRow( );
-
-                for ( auto i = 0UL; i < joystick.buttons.size( ); ++i )
+                if ( ImGui::CollapsingHeader( joystick.name.c_str( ), ImGuiTreeNodeFlags_DefaultOpen ) )
                 {
-                    ImGui::PushID( static_cast< int >( i ) );
-
-                    ImGui::TableNextColumn( );
-
-                    auto const label = fmt::format( "({})##button", i );
-                    ImGui::RadioButton( label.c_str( ), joystick.buttons[ i ] == GLFW_PRESS );
-
-                    if ( i % 8 == 7 )
-                    {
-                        ImGui::TableNextRow( );
-                    }
-
-                    ImGui::PopID( );
+                    configure_buttons_gui( joystick );
+                    configure_axis_gui( joystick );
                 }
-
-                ImGui::EndTable( );
-            }
-
-            for ( auto i = 0UL; i < joystick.axes.size( ); ++i )
-            {
-                ImGui::PushID( static_cast< int >( i ) );
-
-                auto const label = fmt::format( "({})##axis", i );
-                auto       axis  = joystick.axes[ i ];
-                ImGui::SliderFloat( label.c_str( ), &axis, -1.f, 1.f, "%.3f" );
 
                 ImGui::PopID( );
             }
         }
-
-        ImGui::PopID( );
     }
+    ImGui::End( );
 }
 
 } // namespace ltb::joy

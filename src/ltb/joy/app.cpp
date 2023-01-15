@@ -166,13 +166,7 @@ auto MainWindow::main_loop( ) -> utils::Expected< MainWindow* >
         auto joysticks = poll_joystick_info( );
 
         // Configure joysticks GUI
-        ImGui::SetNextWindowPos( { 0.f, 0.f } );
-        ImGui::SetNextWindowSize( ImGui::GetIO( ).DisplaySize );
-        if ( ImGui::Begin( "Joysticks", nullptr, ImGuiWindowFlags_NoTitleBar ) )
-        {
-            configure_gui( joysticks );
-        }
-        ImGui::End( );
+        configure_gui_window( joysticks );
 
         // Render GUI
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
