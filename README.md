@@ -8,7 +8,8 @@ From the repo root directory:
 
 ```bash
 # make build directory and enter it.
-mkdir build && cd build
+mkdir build
+cd build
 # Configure the project
 cmake -DCMAKE_BUILD_TYPE=Release ..
 # Build the project
