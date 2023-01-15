@@ -35,7 +35,7 @@ file(
     false
   CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_LIST_DIR}/src/*.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/*.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/*.c
 )
 
 add_executable(
@@ -64,7 +64,13 @@ target_include_directories(
 target_compile_features(
   joysticks
   PUBLIC
-    cxx_std_20
+    cxx_std_17
+)
+target_compile_options(
+  joysticks
+  PUBLIC
+    # Trying this out for fun
+    $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-fno-exceptions>
 )
 target_compile_definitions(
   joysticks
