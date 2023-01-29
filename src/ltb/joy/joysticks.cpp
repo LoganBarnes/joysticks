@@ -17,8 +17,10 @@ namespace
 
 auto configure_buttons_gui( Joystick const& joystick )
 {
-    auto const max_column_count    = 8ULL;
-    auto const button_column_count = std::min( max_column_count, joystick.buttons.size( ) );
+    using size_type = std::decay_t< decltype( joystick.buttons.size( ) ) >;
+
+    auto constexpr max_column_count = size_type( 8 );
+    auto const button_column_count  = std::min( max_column_count, joystick.buttons.size( ) );
 
     if ( ImGui::BeginTable( "Buttons", button_column_count, ImGuiTableFlags_Borders ) )
     {
